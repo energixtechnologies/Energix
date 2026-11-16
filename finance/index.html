@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en-PK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finance | Energix Technologies</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/finance/finance.css?v=26">
+</head>
+<body>
+
+<!-- Login (shown only when Supabase is configured and no session) -->
+<section id="login" hidden>
+  <form id="loginForm" class="card login-card" autocomplete="on">
+    <img src="/img/logo.png?v=2" alt="Energix Technologies" class="login-logo">
+    <h1>Finance sign in</h1>
+    <p class="muted">Authorised Energix staff only.</p>
+    <label>Email<input name="email" type="email" required autocomplete="username"></label>
+    <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
+    <button class="btn primary" type="submit">Sign in</button>
+    <p id="loginErr" class="err" role="alert"></p>
+    <p class="muted small"><a href="/">&larr; Back to website</a></p>
+  </form>
+</section>
+
+<div id="app" hidden>
+  <header class="top">
+    <div class="wrap bar">
+      <a href="/" class="brand"><img src="/img/logo-mark.png" alt="Energix Technologies"></a>
+      <div class="title"><b>Finance</b><span id="modeTag" class="tag"></span><span class="tag" style="background:#eef3ea;color:#245a0d">v26</span></div>
+      <div class="who">
+        <span id="userEmail" class="muted small"></span>
+        <button class="btn ghost sm" id="sigBtn" type="button">Signatures &amp; stamp</button>
+        <button class="btn ghost sm" id="backupBtn" type="button">Backup</button>
+        <label class="btn ghost sm filebtn">Restore<input id="restoreFile" type="file" accept="application/json" hidden></label>
+        <button class="btn ghost sm" id="logoutBtn" type="button" hidden>Sign out</button>
+      </div>
+    </div>
+    <div class="wrap"><div id="banner" class="banner" hidden></div></div>
+    <nav class="wrap tabs" role="tablist" aria-label="Finance sections">
+      <button role="tab" data-tab="customers" class="on">1 &middot; Customers</button>
+      <button role="tab" data-tab="quotations">2 &middot; Quotations</button>
+      <button role="tab" data-tab="accounts">3 &middot; Accounts</button>
+      <button role="tab" data-tab="invoices">4 &middot; Invoices</button>
+    </nav>
+  </header>
+
+  <main class="wrap">
+
+    <!-- A. CUSTOMERS -->
+    <section data-panel="customers">
+      <div class="grid2">
+        <form id="cForm" class="card" autocomplete="off">
+          <h2>Customer information</h2>
+          <input type="hidden" name="id">
+          <div class="row2">
+            <label>Title<input name="title" maxlength="20" list="titleList" placeholder="Mr., Dr. … or type your own"></label>
+            <label>Customer name<input name="name" maxlength="120"></label>
+          </div>
+          <datalist id="titleList"><option value="Mr."><option value="Mrs."><option value="Ms."><option value="Dr."><option value="Prof."></datalist>
+          <label>Customer company<input name="company" maxlength="160"></label>
+          <label>Customer company address<textarea name="address" rows="3" maxlength="400"></textarea></label>
+          <div class="row2">
+            <label>Customer mobile number<input name="mobile" maxlength="40" inputmode="tel"></label>
+            <label>Customer email<input name="email" type="email" maxlength="160"></label>
+          </div>
+          <p class="muted small">Everything is optional except a name or a company. Anything left blank is simply not printed on the invoice.</p>
+          <div class="actions"><button class="btn primary" type="submit">Save customer</button><button class="btn ghost" type="button" data-reset="cForm">Clear</button></div>
+        </form>
+        <div class="card">
+          <div class="listhead"><h2>Saved customers</h2><input id="cSearch" type="search" placeholder="Search customers"></div>
+          <div class="tablewrap"><table class="tbl" id="cList"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- B. QUOTATIONS -->
+    <section data-panel="quotations" hidden>
+      <div class="grid2">
+        <form id="qForm" class="card" autocomplete="off">
+          <h2>Quotation</h2>
+          <input type="hidden" name="id">
+          <div class="row2">
+            <label>Quotation no.<input name="quote_no" maxlength="40"></label>
+            <label>Date<input name="date" type="date"></label>
+          </div>
+          <label>Customer<select name="customer_id" id="qCustomer"></select></label>
+          <label>Project / subject<input name="project" maxlength="200"></label>
+          <fieldset>
+            <legend>Quotation type</legend>
+            <div id="qCats" class="chips"></div>
+            <div id="qOpts" class="chips opts"></div>
+            <div id="qSummary" class="chips summary"></div>
+            <p class="muted small">Pick a category, then tick every option that applies (for example Solar &rarr; Hybrid + Supply &amp; Services).</p>
+          </fieldset>
+          <div class="row2">
+            <label>Status<select name="status"><option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option></select></label>
+            <label>Notes<input name="notes" maxlength="400"></label>
+          </div>
+          <div class="actions"><button class="btn primary" type="submit">Save quotation</button><button class="btn ghost" type="button" id="qClear">Clear</button></div>
+        </form>
+        <div class="card">
+          <div class="listhead"><h2>Quotations</h2><select id="qFilter"><option value="">All statuses</option><option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option></select></div>
+          <div class="tablewrap"><table class="tbl" id="qList"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- C. ACCOUNTS -->
+    <section data-panel="accounts" hidden>
+      <div class="grid2">
+        <form id="aForm" class="card" autocomplete="off">
+          <h2>Account information</h2>
+          <input type="hidden" name="id">
+          <label>Account title<input name="title" maxlength="160"></label>
+          <div class="row2">
+            <label>Bank<input name="bank" maxlength="120"></label>
+            <label>Branch code<input name="branch_code" maxlength="30"></label>
+          </div>
+          <div class="row2">
+            <label>Account no.<input name="account_no" maxlength="40"></label>
+            <label>IBAN<input name="iban" maxlength="40"></label>
+          </div>
+          <label>Branch address<input name="branch_address" maxlength="240"></label>
+          <div class="row3">
+            <label>NTN<input name="ntn" maxlength="30"></label>
+            <label>GST<input name="gst" maxlength="30"></label>
+            <label>PRA<input name="pra" maxlength="30"></label>
+          </div>
+          <p class="muted small">Blank fields are not printed in &ldquo;Transfer Payment To&rdquo;.</p>
+          <div class="actions"><button class="btn primary" type="submit">Save account</button><button class="btn ghost" type="button" data-reset="aForm">Clear</button></div>
+        </form>
+        <div class="card">
+          <h2>Saved accounts</h2>
+          <div class="tablewrap"><table class="tbl" id="aList"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- D. INVOICES -->
+    <section data-panel="invoices" hidden>
+      <div id="invList">
+        <div class="kpis" id="kpis"></div>
+        <div class="card">
+          <div class="listhead">
+            <h2>Invoices &amp; tracking</h2>
+            <div class="tools">
+              <input id="iSearch" type="search" placeholder="Search invoice, customer, project">
+              <select id="iFilter"><option value="">All</option><option>Draft</option><option>Unpaid</option><option>Partially paid</option><option>Cheque pending</option><option>Paid</option><option>Overdue</option><option>Cancelled</option></select>
+              <button class="btn ghost sm" id="csvBtn" type="button">Export CSV</button>
+              <button class="btn primary" id="newInv" type="button">+ Create invoice</button>
+            </div>
+          </div>
+          <div class="tablewrap"><table class="tbl" id="iTable"></table></div>
+        </div>
+      </div>
+
+      <form id="iEditor" class="card" hidden autocomplete="off">
+        <div class="listhead"><h2 id="iEdTitle">Create invoice</h2><button class="btn ghost sm" type="button" id="iCancel">&larr; Back to list</button></div>
+        <div class="grid2 tight">
+          <div>
+            <label>Invoice to (customer)<select id="iCustomer"></select></label>
+            <div class="prev" id="iCustPrev"></div>
+          </div>
+          <div>
+            <label>Account to (transfer payment to)<select id="iAccount"></select></label>
+            <div class="prev" id="iAccPrev"></div>
+          </div>
+        </div>
+        <div class="row4">
+          <label>Invoice date<input id="iDate" type="date" required></label>
+          <label>Due date (optional)<input id="iDue" type="date"></label>
+          <label>Invoice #<input id="iNo" maxlength="40" required></label>
+          <label>Project code (optional)<input id="iPO" maxlength="60"></label>
+        </div>
+        <div class="row3">
+          <label>Project name<input id="iProject" maxlength="200"></label>
+          <label>From quotation (optional)<select id="iQuote"></select></label>
+          <label>Status<select id="iStatus"><option value="draft">Draft</option><option value="issued">Issued</option><option value="cancelled">Cancelled</option></select></label>
+        </div>
+
+        <h3>Items</h3>
+        <div class="tablewrap"><table class="tbl items" id="iItems"><thead><tr><th></th><th>Item</th><th>Description</th><th>Unit</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th><th></th></tr></thead><tbody></tbody></table></div>
+        <datalist id="itemNames"><option>Service Charges</option><option>Supplies</option><option>Material Supply</option><option>Labour</option><option>Design Fee</option><option>Project Management</option></datalist>
+        <div class="actions"><button class="btn ghost sm" type="button" id="addItem">+ Add item</button></div>
+
+        <div class="grid2 tight">
+          <div>
+            <h3>Taxes (optional)</h3>
+            <div id="iTaxes"></div>
+            <div class="actions">
+              <button class="btn ghost sm" type="button" data-tax="PRA on Services|16">+ PRA 16%</button>
+              <button class="btn ghost sm" type="button" data-tax="GST|18">+ GST 18%</button>
+              <button class="btn ghost sm" type="button" data-tax="Tax|0">+ Custom tax</button>
+            </div>
+            <p class="muted small">Tax rates are editable and are calculated on the items subtotal.</p>
+            <h3>Adjustments (optional)</h3>
+            <div id="iAdjs"></div>
+            <div class="actions">
+              <button class="btn ghost sm" type="button" data-adj="Discount|-1|pct">− Discount %</button>
+              <button class="btn ghost sm" type="button" data-adj="Discount|-1|val">− Discount (PKR)</button>
+              <button class="btn ghost sm" type="button" data-adj="Addition|1|val">+ Addition (PKR)</button>
+              <button class="btn ghost sm" type="button" data-adj="Addition|1|pct">+ Addition %</button>
+            </div>
+            <p class="muted small">A discount reduces and an addition increases the total. Percentages are taken on the items subtotal.</p>
+            <label>Notes (printed under the total)<textarea id="iNotes" rows="2" maxlength="600"></textarea></label>
+            <label class="chk"><input type="checkbox" id="iSign" checked> Add signatures and stamp on this invoice</label>
+            <label>Total amount in words<select id="iWords"><option value="intl">International (Million, Billion)</option><option value="pk">Lakh / Crore (Pakistani)</option></select></label>
+          </div>
+          <div class="totals" id="iTotals"></div>
+        </div>
+
+        <div class="actions end">
+          <button class="btn ghost" type="button" id="iSaveDraft">Save</button>
+          <button class="btn primary" type="submit">Generate invoice (preview)</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>
+
+<!-- Preview -->
+<dialog id="sendDlg" class="dlg">
+  <div class="dlgbar"><b id="sendTitle">Send invoice</b><button class="btn ghost sm" id="sendClose" type="button">Close</button></div>
+  <div class="form" style="padding:16px;display:grid;gap:10px">
+    <label>Message<textarea id="sendMsg" rows="6"></textarea></label>
+    <label>Email address<input id="sendEmail" type="email" autocomplete="off"></label>
+    <button class="btn primary" id="sendMail" type="button">Send by Email</button>
+    <label>WhatsApp number<input id="sendPhone" type="tel" placeholder="0300 1234567" autocomplete="off"></label>
+    <button class="btn primary" id="sendWa" type="button">Send by WhatsApp</button>
+    <small>The PDF is downloaded and the email / WhatsApp chat opens with the message ready. Attach the PDF there (on phones it is shared directly).</small>
+  </div>
+</dialog>
+<dialog id="proofDlg" class="dlg wide">
+  <div class="dlgbar"><b id="proofTitle">Payment evidence</b><button class="btn ghost sm" id="proofClose" type="button">Close</button></div>
+  <div id="proofView" class="proofview"></div>
+</dialog>
+<dialog id="pvDlg" class="dlg wide">
+  <div class="dlgbar"><b id="pvTitle">Invoice preview</b><div><button class="btn ghost sm" id="pvBack" type="button">Back to edit</button> <button class="btn primary sm" id="pvPdf" type="button">Generate PDF</button> <button class="btn primary sm" id="pvSend" type="button">Send invoice</button> <button class="btn ghost sm" id="pvClose" type="button">Close</button></div></div>
+  <div id="pvPages" class="pages"></div>
+</dialog>
+
+<!-- Payments -->
+<dialog id="payDlg" class="dlg">
+  <div class="dlgbar"><b id="payTitle">Payments</b><button class="btn ghost sm" id="payClose" type="button">Close</button></div>
+  <div id="paySummary" class="paysum"></div>
+  <table class="tbl" id="payList"></table>
+  <form id="payForm" class="payform" autocomplete="off">
+    <label>Date<input name="date" type="date" required></label>
+    <label>Amount (PKR)<input name="amount" type="number" step="0.01" min="0.01" required></label>
+    <label>Method<select name="method"><option>Bank transfer</option><option>Cash</option><option>Cheque</option><option>Online</option><option>Other</option></select></label>
+    <label>Reference / tracking no.<input name="reference" maxlength="80"></label>
+    <div id="payProof" class="proof" style="grid-column:1/-1" hidden>
+      <b>Payment evidence</b> <span class="muted small">receipt, cheque or transfer screenshot — add one or more pictures</span>
+      <div class="proofbtns"><button class="btn ghost sm" type="button" id="proofCam">Take photo</button><button class="btn ghost sm" type="button" id="proofPick">Choose from gallery</button></div>
+      <input type="file" id="proofCamIn" accept="image/*" capture="environment" hidden>
+      <input type="file" id="clearIn" accept="image/*" hidden>
+      <input type="file" id="proofPickIn" accept="image/*" multiple hidden>
+      <div class="row2 proofinfo"><label>Received from<input name="sender" maxlength="120"></label><label>Bank / channel<input name="bank" maxlength="80"></label><label>Account no.<input name="account" maxlength="60"></label></div>
+      <label class="clr">Clearing message / transaction ID <span class="muted small">(cheque only)</span><input name="clearing" maxlength="80"></label>
+      <p id="chqNote" class="chqnote" hidden><b>Cheque:</b> please also add the bank's clearing / transaction message (picture or ID) so a bounced cheque is not counted as payment. Without it the invoice stays "Cheque pending clearance".</p>
+      <div id="proofThumbs" class="thumbs"></div>
+      <div id="proofStatus" class="muted small" aria-live="polite"></div>
+    </div>
+    <button class="btn primary" type="submit">Record payment</button>
+  </form>
+</dialog>
+
+<!-- Signatures + stamp -->
+<dialog id="sigDlg" class="dlg">
+  <div class="dlgbar"><b>Signatures &amp; stamp</b><button class="btn ghost sm" id="sigClose" type="button">Close</button></div>
+  <div class="spbody"><p class="muted small">Add a photo or scan of each signature and your company stamp. The background is removed automatically. They are stored privately and only appear on invoices for signed-in finance users. Use the tick box in the invoice editor to leave them off a particular invoice.</p><div id="sigBody"></div></div>
+</dialog>
+
+<!-- Spell check -->
+<dialog id="spDlg" class="dlg">
+  <div class="dlgbar"><b>Check spelling</b><div><button class="btn ghost sm" id="spClose" type="button">Back to edit</button> <button class="btn primary sm" id="spGo" type="button">Continue to preview</button></div></div>
+  <div id="spBody" class="spbody"></div>
+</dialog>
+
+<!-- Confirm -->
+<dialog id="cfDlg" class="dlg small"><p id="cfText"></p><div class="actions end"><button class="btn ghost" id="cfNo" type="button">Cancel</button><button class="btn danger" id="cfYes" type="button">Delete</button></div></dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="/js/config.js"></script>
+<script src="/finance/vendor/jspdf.umd.min.js"></script>
+<script src="/finance/finance.js?v=26"></script>
+</body>
+</html>
